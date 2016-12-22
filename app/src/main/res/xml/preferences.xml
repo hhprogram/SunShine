@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="8888"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/zip_entry"
+        android:numeric="integer"
+        android:maxLength="5"
+        android:key="@string/zip_entry"
+        android:autoText="false" />
+
+    <ListPreference
+        android:defaultValue="1"
+        android:title="@string/units"
+        android:entries="@array/Units"
+        android:entryValues="@array/units_values"
+        android:key="@string/units" />
+    <EditTextPreference
+        android:hint="@string/default_zip"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Edit text preference"
+        android:key="edit_text_preference_1"
+        tools:maxLength="5"
+        android:numeric="integer"
+        android:text="hkj" />
+</PreferenceScreen>

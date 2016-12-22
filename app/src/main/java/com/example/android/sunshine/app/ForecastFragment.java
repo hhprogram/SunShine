@@ -37,7 +37,9 @@ public class ForecastFragment extends Fragment {
     GetRequest request;
     String forecastJson;
     JSONArray week = null;
+    String ZIP_CODE = "10019";
     final static String LIST_DATA = "LIST_DATA";
+    final static String INDEX = "INDEX";
     public ForecastFragment() {
     }
 
@@ -56,6 +58,7 @@ public class ForecastFragment extends Fragment {
         //REQUEST is the asynctask object used to create a new thread to do the background work
         days = new ArrayList<String>();
         request = new GetRequest();
+
     }
 
     //called when setHasOptionMenu is set to True. we refer to the forecastfragment as we
@@ -123,7 +126,7 @@ public class ForecastFragment extends Fragment {
             //execute the GetRequest AsyncTask object, with the given parameters (the
             //important one is the FORECAST which is the API URL
             //then we call get() to actual return the result of our 'execute' call
-            forecastJson = request.execute("94704").get();
+            forecastJson = request.execute(ZIP_CODE).get();
             //get() throws both these exception so I need to catch them or else Java will
             //not allow me to compile because this is a compile time error
         } catch (ExecutionException e) {
@@ -133,7 +136,7 @@ public class ForecastFragment extends Fragment {
             System.out.println("Interrupted exception thrown from get request");
             return null;
         }
-        updateAdapter(forecastJson, "94704");
+        updateAdapter(forecastJson, ZIP_CODE);
 
 //            ArrayList<String> days = new ArrayList<String>();
 //            days.add("Sunday");
@@ -151,7 +154,9 @@ public class ForecastFragment extends Fragment {
         listView.setAdapter(adapter);
         //sets a listener to this fragment activity. So if any item on this activity is clicked
         //then it uses the new object onItemClickListener shown in the parameter and calls the
-        //onItemClick method that must be overridden when creating a new OnItemClickListener.
+        //onItemClick method (this is being done in the below, hover over the light blue highlighted
+        // section. Instantiated in place with onClick being overridden by code below
+        // that must be overridden when creating a new OnItemClickListener.
         //What we do right below is instantiate this new instance of OnItemClickListener 'in-place'
         //to make it simpler
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -162,18 +167,42 @@ public class ForecastFragment extends Fragment {
                     Toast.makeText(getActivity(),"No detail", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getActivity(), adapter.getItem(i), Toast.LENGTH_SHORT).show();
+                    //explicit intent (intent is a messaging object that tells android which
+                    //component to launch). First parameter is the activity that is launching this
+                    //intent and 2nd parameter is the explicit part - telling android which
+                    //component should actually be launched and handle this intent. intents can
+                    //also carry data on to the component to be started that is needed in that class
                     Intent detail = new Intent(getActivity(), DetailActivity.class);
                     JSONObject detailToSend = null;
                     try {
+                        //WEEK is the JSON array that holds the weather info for the duration of
+                        //forecasted requested in the API request. (use 'i-1' because the 'i' refers
+                        //to the position in the list array of the screen, but the screen's first
+                        //index is just the zip code of the weather forecast request. Therefore,
+                        //there is a 1 spot mismatch between the list view indices and the indices
+                        //of the JSON array
                         detailToSend = week.getJSONObject(i - 1);
                     } catch (JSONException e) {
                         System.out.println("Error On the Click");
                     }
-                    detail.putExtra(LIST_DATA, detailToSend.toString());
+                    //loading data for the specific day into this explicit intent
+                    //using a bundle for ease of management. you can put all key value pairs into
+                    //bundle object and then put it into the intent's bundle to be sent...then
+                    //on the receiving end you get the extras just like normal, just an easy way
+                    //to mass send key value pairs. Can also send bundles themselves as a value in
+                    //a key value pair
+                    Bundle extras = new Bundle();
+                    extras.putString(LIST_DATA, detailToSend.toString());
+                    extras.putInt(INDEX, i-1);
+                    detail.putExtras(extras);
+                    //starting the DetailActivity java class (ie it will takes us to another page)
                     startActivity(detail);
                 }
             }
         });
+//        SettingsActivity.SettingsFragment setting = new SettingsActivity.SettingsFragment();
+//        SharedPreferences pref =  setting.findPreference("Zip Code").getSharedPreferences();
+//        Toast.makeText(getActivity(),pref.getString("Zip Code","blah"), Toast.LENGTH_SHORT).show();
         return rootView;
     }
 
